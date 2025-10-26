@@ -280,6 +280,10 @@ const values = (seasons ?? []).map((s) => {
                         setStatus("ok", "Saved.");
                         msg.className = "text-sm text-green-500";
                         msg.textContent = "Username updated.";
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 300);
                     } catch (err) {
                         setStatus(
                             "error",
