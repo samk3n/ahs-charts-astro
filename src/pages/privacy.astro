@@ -1,0 +1,203 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const updated = "October 26, 2025"; // keep this current
+---
+
+<BaseLayout
+    title="Privacy Policy — AHS Ratings"
+    description="How AHS Ratings collects, uses, and protects your data."
+>
+    <section class="container py-10">
+        <h1
+            class="mb-2 text-3xl font-bold"
+            style="font-family: var(--font-display)"
+        >
+            Privacy Policy
+        </h1>
+        <p class="text-muted">Last updated: {updated}</p>
+
+        <div class="mt-8 space-y-8">
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">Overview</h2>
+                <p class="text-muted">
+                    AHS Ratings (“we”, “us”) lets people rate each season of <em
+                        >American Horror Story</em
+                    > and compare with the community. This policy explains what we
+                    collect, how we use it, and the choices you have.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">Information we collect</h2>
+                <ul class="list-disc space-y-2 pl-6 text-muted">
+                    <li>
+                        <span class="text-text font-medium">Account data:</span>
+                        email address, password (hashed), OAuth identifiers (e.g.,
+                        Google), email verification status.
+                    </li>
+                    <li>
+                        <span class="text-text font-medium">Profile data:</span>
+                        username, profile picture (stored in Supabase Storage), display
+                        preferences (e.g., theme).
+                    </li>
+                    <li>
+                        <span class="text-text font-medium">Ratings data:</span>
+                        your per-season ratings and timestamps.
+                    </li>
+                    <li>
+                        <span class="text-text font-medium">Usage data:</span> basic
+                        analytics (aggregated or pseudonymous) such as page views,
+                        referrers, and device/browser information.
+                    </li>
+                    <li>
+                        <span class="text-text font-medium"
+                            >Cookies & local storage:</span
+                        > session cookies for authentication and a small key for
+                        theme preference.
+                    </li>
+                </ul>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">How we use information</h2>
+                <ul class="list-disc space-y-2 pl-6 text-muted">
+                    <li>
+                        Provide, secure, and maintain the service
+                        (authentication, RLS permissions, profile management).
+                    </li>
+                    <li>
+                        Render charts (your profile chart; community averages in <code
+                            >/stats</code
+                        >).
+                    </li>
+                    <li>
+                        Improve features and performance (troubleshooting, usage
+                        metrics, anti-abuse).
+                    </li>
+                    <li>
+                        Communicate with you (account verification, critical
+                        updates).
+                    </li>
+                </ul>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">Sharing & disclosure</h2>
+                <p class="text-muted">
+                    We don’t sell your personal information. We share limited
+                    data with service providers who help us operate the site,
+                    strictly for the services they perform:
+                </p>
+                <ul class="list-disc space-y-2 pl-6 text-muted">
+                    <li>
+                        <span class="text-text font-medium">Supabase:</span> authentication,
+                        Postgres database, Storage/CDN.
+                    </li>
+                    <li>
+                        <span class="text-text font-medium">Netlify:</span> hosting
+                        and serverless functions.
+                    </li>
+                    <li>
+                        <span class="text-text font-medium"
+                            >OAuth providers (e.g., Google):</span
+                        > if you choose to sign in with them.
+                    </li>
+                </ul>
+                <p class="text-muted">
+                    Public information: your <span class="font-medium text-text"
+                        >username</span
+                    > and <span class="font-medium text-text">ratings</span> are
+                    visible to others (e.g., on your profile and in community feeds/averages).
+                    Your email is never displayed publicly.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">Data retention</h2>
+                <p class="text-muted">
+                    We keep account and ratings data while your account remains
+                    active. If you delete your account, we will delete or
+                    anonymize your personal data within a reasonable period,
+                    subject to legal or operational requirements (e.g., backups
+                    with limited retention).
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">Your choices & rights</h2>
+                <ul class="list-disc space-y-2 pl-6 text-muted">
+                    <li>
+                        Update your profile (username and avatar) from your
+                        account page.
+                    </li>
+                    <li>
+                        Modify your ratings at any time from the “Rate” page.
+                    </li>
+                    <li>
+                        Opt out of theme/local preferences by clearing local
+                        storage in your browser.
+                    </li>
+                    <li>
+                        Request access, correction, export, or deletion of your
+                        data by contacting us (see below).
+                    </li>
+                </ul>
+                <p class="text-muted">
+                    If you’re in the EEA/UK, you may have additional rights
+                    under GDPR, including objecting to certain processing and
+                    lodging a complaint with your local supervisory authority.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">Security</h2>
+                <p class="text-muted">
+                    We use Supabase’s managed Postgres with Row Level Security
+                    and hashed credentials. No method of transmission or storage
+                    is 100% secure; we aim to use reasonable safeguards
+                    appropriate to the risk.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">International transfers</h2>
+                <p class="text-muted">
+                    Our infrastructure and providers may operate in multiple
+                    regions. Your information may be processed outside of your
+                    country. We rely on our providers’ data transfer mechanisms
+                    where applicable.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">Children</h2>
+                <p class="text-muted">
+                    AHS Ratings is not intended for children under 13 (or the
+                    minimum age required in your country). We don’t knowingly
+                    collect data from children under that age.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">Changes to this policy</h2>
+                <p class="text-muted">
+                    We may update this Privacy Policy. We’ll change the “Last
+                    updated” date and, when appropriate, provide additional
+                    notice.
+                </p>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="text-xl font-semibold">Contact</h2>
+                <p class="text-muted">
+                    Questions or requests? Email us at <a
+                        class="underline text-text"
+                        href="mailto:support@ahsratings.example"
+                        >support@ahsratings.example</a
+                    >.
+                </p>
+            </section>
+        </div>
+    </section>
+</BaseLayout>
