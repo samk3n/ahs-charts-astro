@@ -1,0 +1,62 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { supabaseFromAstro } from "@/lib/supabaseServer";
+import RateChartIsland from "@/components/RateChartIsland.tsx";
+
+const supabase = supabaseFromAstro(Astro);
+
+// Require auth – if no user, redirect to login (replace path with your auth route)
+const { data: userRes } = await supabase.auth.getUser();
+if (!userRes.user) {
+    return Astro.redirect("/auth/login");
+}
+
+// Load seasons (ordered)
+const { data: seasons } = await supabase
+    .from("seasons")
+    .select("id,title,order_index")
+    .eq("is_active", true)
+    .order("order_index");
+
+// Load user's existing ratings
+const { data: myRatings } = await supabase
+    .from("ratings")
+    .select("season_id,rating")
+    .eq("user_id", userRes.user.id);
+
+const initial = Object.fromEntries(
+    (myRatings ?? []).map((r) => [r.season_id, r.rating]),
+);
+
+// Email verification status
+const emailVerified = !!userRes.user.email_confirmed_at;
+---
+
+<BaseLayout
+    title="Rate — AHS Ratings"
+    description="Rate every season of American Horror Story."
+>
+    <section
+        class="border-b border-border bg-[radial-gradient(80%_80%_at_50%_0%,color-mix(in_oklab,var(--color-accent)_20%,transparent),transparent_60%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.25))]"
+    >
+        <div class="container py-10">
+            <h1
+                class="mb-1 text-3xl tracking-wide font-display"
+            >
+                Make your chart
+            </h1>
+            <p class="max-w-[720px] text-muted">
+                Drag the sliders to set your rating for each season.
+            </p>
+        </div>
+    </section>
+
+    <section class="container py-6">
+        <RateChartIsland
+            client:load
+            seasons={seasons ?? []}
+            initialRatings={initial}
+            emailVerified={emailVerified}
+        />
+    </section>
+</BaseLayout>

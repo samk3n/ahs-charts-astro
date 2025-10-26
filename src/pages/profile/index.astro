@@ -1,0 +1,345 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { supabaseFromAstro } from "@/lib/supabaseServer";
+import SVGBarChart from "@/components/SVGBarChart.tsx";
+import AvatarUploader from "@/components/AvatarUploader.tsx";
+
+const supabase = supabaseFromAstro(Astro);
+
+// Require auth
+const { data: userRes } = await supabase.auth.getUser();
+if (!userRes.user) {
+    return Astro.redirect("/auth/login");
+}
+
+// Profile
+const { data: profile } = await supabase
+    .from("profiles")
+    .select("username, avatar_url, avatar_version")
+    .eq("id", userRes.user.id)
+    .single();
+
+const avatar = profile?.avatar_url && profile?.avatar_version != null
+  ? `${profile.avatar_url}?v=${profile.avatar_version}`
+  : null;
+const username = profile?.username ?? null;
+const email = userRes.user.email ?? "";
+
+// Seasons (ordered) + this user's ratings
+const { data: seasons } = await supabase
+    .from("seasons")
+    .select("id,title,order_index")
+    .eq("is_active", true)
+    .order("order_index");
+
+const { data: myRatings } = await supabase
+    .from("ratings")
+    .select("season_id,rating")
+    .eq("user_id", userRes.user.id);
+
+const hasRatings = (myRatings?.length ?? 0) > 0;
+const labels = (seasons ?? []).map((s) => s.title);
+const values = (seasons ?? []).map((s) => {
+    const r = myRatings?.find((x) => x.season_id === s.id);
+    return r?.rating ?? 0;
+});
+---
+
+<BaseLayout title="Your profile — Rate AHS">
+    <section class="container py-10 space-y-6">
+        <!-- User card -->
+        <div
+            class="mx-auto max-w-2xl rounded-xl border border-border bg-panel p-6"
+        >
+            <div class="mb-4 flex items-center gap-4">
+                {
+                    avatar ? (
+                        <img
+                            src={avatar}
+                            alt=""
+                            class="size-16 rounded-full object-cover border border-border"
+                        />
+                    ) : (
+                        <div class="size-16 rounded-full bg-border" />
+                    )
+                }
+                <div>
+                    <div class="text-lg font-semibold">
+                        {username ?? "Set your username"}
+                    </div>
+                    <div class="text-sm text-muted">
+                        {email}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button
+                    id="editButton"
+                    class="rounded-lg border border-border bg-panel px-3 py-2 hover:bg-panel/80 cursor-pointer"
+                >
+                    Edit
+                </button>
+                <script is:inline>
+                    const editBtn = document.querySelector("#editButton");
+                    let showEdit = false;
+                    editBtn?.addEventListener("click", () => {
+                        showEdit = !showEdit;
+                        document.querySelector("#editSection").style.display =
+                            showEdit ? "block" : "none";
+                    });
+                </script>
+                <form action="/api/logout" method="post">
+                    <button
+                        class="rounded-lg border border-red-400 px-3 py-2 text-sm text-red-400 hover:text-text cursor-pointer"
+                    >
+                        Log out
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Settings: change username + change avatar -->
+
+        <div
+            id="editSection"
+            style="display: none;"
+            class="mx-auto w-full max-w-2xl rounded-xl border border-border bg-panel p-5"
+        >
+            <!-- Change username -->
+            <h2 class="mb-3 text-sm font-semibold tracking-wide text-muted">
+                Change username
+            </h2>
+            <form id="unameForm" class="space-y-3">
+                <label class="block">
+                    <div class="mb-1 text-sm text-muted">
+                        Username (5+ letters, numbers, or underscores)
+                    </div>
+                    <input
+                        id="username"
+                        name="username"
+                        minlength="5"
+                        pattern="^[A-Za-z0-9_]{5,}$"
+                        required
+                        placeholder="your_handle"
+                        value={username ?? ""}
+                        class="w-full rounded-lg border border-border bg-bg px-3 py-2 outline-none focus:ring-2 focus:ring-accent"
+                    />
+                </label>
+
+                <!-- live status line -->
+                <div id="uStatus" class="text-sm text-muted"></div>
+
+                <button
+                    id="saveBtn"
+                    type="submit"
+                    class="rounded-lg border border-border bg-panel px-3 py-2 text-sm font-medium hover:bg-panel/80 disabled:opacity-50"
+                    disabled
+                >
+                    Save username
+                </button>
+                <div id="msg" class="text-sm"></div>
+            </form>
+
+            <script is:inline>
+                const form = document.getElementById("unameForm");
+                const input = document.getElementById("username");
+                const statusEl = document.getElementById("uStatus");
+                const btn = document.getElementById("saveBtn");
+                const msg = document.getElementById("msg");
+
+                let lastValue = "";
+                let t = null;
+
+                function setStatus(type, text) {
+                    // type: 'muted' | 'ok' | 'warn' | 'error'
+                    const classes = {
+                        muted: "text-muted",
+                        ok: "text-green-500",
+                        warn: "text-yellow-500",
+                        error: "text-red-500",
+                    };
+                    statusEl.className =
+                        "text-sm " + (classes[type] || "text-muted");
+                    statusEl.textContent = text;
+                }
+
+                function isFormatValid(v) {
+                    return /^[A-Za-z0-9_]{5,}$/.test(v);
+                }
+
+                async function checkAvailability(v) {
+                    try {
+                        const res = await fetch(
+                            "/api/username-available?username=" +
+                                encodeURIComponent(v),
+                        );
+                        const json = await res.json();
+                        if (!json.ok)
+                            throw new Error(json.error || "Check failed");
+                        return json.available === true;
+                    } catch (e) {
+                        return null; // network / server error
+                    }
+                }
+
+                function updateButtonState(canSave) {
+                    if (!btn) return;
+                    if (canSave) btn.removeAttribute("disabled");
+                    else btn.setAttribute("disabled", "true");
+                }
+
+                input?.addEventListener("input", () => {
+                    msg.textContent = "";
+                    const v = input.value.trim();
+                    lastValue = v;
+                    updateButtonState(false);
+
+                    if (!v) {
+                        setStatus("muted", "");
+                        return;
+                    }
+                    if (!isFormatValid(v)) {
+                        setStatus(
+                            "warn",
+                            "Use 5+ characters: letters, numbers, or underscores.",
+                        );
+                        return;
+                    }
+
+                    setStatus("muted", "Checking availability…");
+
+                    if (t) clearTimeout(t);
+                    t = setTimeout(async () => {
+                        // Debounced check
+                        const available = await checkAvailability(v);
+                        // if user typed something else meanwhile, ignore this result
+                        if (lastValue !== v) return;
+
+                        if (available === null) {
+                            setStatus(
+                                "error",
+                                "Could not check availability. Try again.",
+                            );
+                            updateButtonState(false);
+                            return;
+                        }
+                        if (available) {
+                            setStatus(
+                                "ok",
+                                "Looks good — username is available.",
+                            );
+                            updateButtonState(true);
+                        } else {
+                            setStatus("error", "Username already taken.");
+                            updateButtonState(false);
+                        }
+                    }, 300);
+                });
+
+                form?.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    msg.textContent = "";
+                    updateButtonState(false);
+
+                    try {
+                        const v = input.value.trim();
+                        if (!isFormatValid(v)) {
+                            setStatus(
+                                "warn",
+                                "Use 5+ characters: letters, numbers, or underscores.",
+                            );
+                            updateButtonState(false);
+                            return;
+                        }
+
+                        // final check before submit (optional)
+                        const available = await checkAvailability(v);
+                        if (available === false) {
+                            setStatus("error", "Username already taken.");
+                            updateButtonState(false);
+                            return;
+                        }
+                        if (available === null) {
+                            setStatus(
+                                "error",
+                                "Could not check availability. Try again.",
+                            );
+                            updateButtonState(false);
+                            return;
+                        }
+
+                        const res = await fetch("/api/username", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ username: v }),
+                        });
+                        const json = await res.json();
+                        if (!res.ok) throw new Error(json?.error || "Failed");
+
+                        setStatus("ok", "Saved.");
+                        msg.className = "text-sm text-green-500";
+                        msg.textContent = "Username updated.";
+                    } catch (err) {
+                        setStatus(
+                            "error",
+                            err && err.message ? err.message : "Error",
+                        );
+                        msg.className = "text-sm text-red-500";
+                        msg.textContent =
+                            err && err.message ? err.message : "Error";
+                    } finally {
+                        // re-enable button if current input remains valid & available will be rechecked by input listener
+                    }
+                });
+            </script>
+
+            <!-- Change profile picture -->
+            <h2 class="mb-3 text-sm font-semibold tracking-wide text-muted">
+                Profile picture
+            </h2>
+            <AvatarUploader client:load initialUrl={avatar} />
+        </div>
+
+        <!-- User chart or CTA -->
+        <div class="mx-auto w-full max-w-2xl">
+            {
+                hasRatings ? (
+                    <div class="rounded-xl border border-border bg-panel p-4">
+                        <div class="mb-3 flex items-center justify-between">
+                            <h2 class="text-sm font-semibold tracking-wide text-muted">
+                                Your chart
+                            </h2>
+                            <a
+                                href="/rate"
+                                class="text-sm text-muted hover:text-text"
+                            >
+                                Edit ratings →
+                            </a>
+                        </div>
+                        <SVGBarChart
+                            labels={labels}
+                            values={values}
+                            height={400}
+                        />
+                    </div>
+                ) : (
+                    <div class="rounded-xl border border-border bg-panel p-6 text-center">
+                        <h2 class="mb-2 text-lg font-semibold">
+                            No ratings yet
+                        </h2>
+                        <p class="mb-4 text-muted">
+                            Create your chart to see it here.
+                        </p>
+                        <a
+                            href="/rate"
+                            class="inline-block rounded-lg border border-border bg-panel px-4 py-2 hover:bg-panel/80"
+                        >
+                            Rate now
+                        </a>
+                    </div>
+                )
+            }
+        </div>
+    </section>
+</BaseLayout>

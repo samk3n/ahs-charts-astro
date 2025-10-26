@@ -1,0 +1,105 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import UserChartCard from "@/components/UserChartCard.astro";
+import { supabaseFromAstro } from "@/lib/supabaseServer";
+import CTASection from "@/components/CTASection.astro";
+import hero from "@/assets/hero.png";
+import Image from "astro/components/Image.astro";
+
+const supabase = supabaseFromAstro(Astro);
+
+// last 10 users by activity
+const { data: latestUsers } = await supabase
+    .from("user_last_activity")
+    .select("user_id,last_activity")
+    .order("last_activity", { ascending: false })
+    .limit(10);
+
+const userIds = (latestUsers ?? []).map((u) => u.user_id);
+
+// profiles
+const { data: profiles } = userIds.length
+    ? await supabase
+          .from("profiles")
+          .select("id,username,avatar_url,avatar_version")
+          .in("id", userIds)
+    : { data: [] };
+
+// seasons ordered
+const { data: seasons } = await supabase
+    .from("seasons")
+    .select("id,title,order_index")
+    .eq("is_active", true)
+    .order("order_index");
+
+// ratings for those users
+const { data: ratings } = userIds.length
+    ? await supabase
+          .from("ratings")
+          .select("user_id,season_id,rating,updated_at")
+          .in("user_id", userIds)
+    : { data: [] };
+
+const cards = (latestUsers ?? []).map((u) => {
+    const p = profiles?.find((p) => p.id === u.user_id);
+    const labels = (seasons ?? []).map((s) => s.title);
+    const values = (seasons ?? []).map(
+        (s) =>
+            ratings?.find(
+                (r) => r.user_id === u.user_id && r.season_id === s.id,
+            )?.rating ?? 0,
+    );
+    return {
+        user_id: u.user_id,
+        username: p?.username ?? "User",
+        avatarUrl: p?.avatar_url ? `${p?.avatar_url}?v=${p?.avatar_version}` : null,
+        updated: u.last_activity,
+        labels,
+        values,
+    };
+});
+---
+
+<BaseLayout
+    title="AHS Ratings — Home"
+    description="Rate every season of American Horror Story and explore the latest charts from the community."
+>
+    <!-- Hero -->
+    <section
+        class="relative h-96 flex flex-col items-center justify-center overflow-hidden py-24 text-center text-white"
+    >
+        <!-- Background image -->
+        <Image
+            src={hero}
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover object-right md:brightness-90"
+            loading="lazy"
+        />
+
+        <div class="relative z-10 max-w-3xl px-4">
+            <h1 class="text-4xl md:text-5xl font-display">
+                Rate every season of American Horror Story
+            </h1>
+            <p class="mt-4 text-lg text-gray-200">
+                Share your opinions, compare with others, and see which seasons
+                truly stand out.
+            </p>
+            <a
+                href="/rate"
+                class="mt-6 inline-block rounded-lg border border-accent bg-accent/10 px-5 py-2.5 font-medium hover:bg-accent/20"
+            >
+                Rate now →
+            </a>
+        </div>
+    </section>
+
+    <!-- Latest 10 charts (grid on desktop, single column on mobile) -->
+    <section class="container py-4 my-3">
+        <h2 class="mb-4 text-muted tracking-wide">Latest Ratings</h2>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {cards.map((c) => <UserChartCard {...c} />)}
+        </div>
+    </section>
+
+    <CTASection />
+</BaseLayout>

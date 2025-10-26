@@ -1,0 +1,67 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SVGBarChart from "@/components/SVGBarChart.tsx";
+import { supabaseFromAstro } from "@/lib/supabaseServer";
+import CTASection from "@/components/CTASection.astro";
+
+const supabase = supabaseFromAstro(Astro);
+
+// Join seasons with avg_ratings to get ordered labels + averages (live)
+const { data, error } = await supabase
+    .from("seasons")
+    .select("id,title,order_index,avg:avg_ratings(avg_rating,count_users)")
+    .eq("is_active", true)
+    .order("order_index");
+
+const labels = data?.map((s) => s.title) ?? [];
+const values = data?.map((s) => Number(s.avg?.[0]?.avg_rating ?? 0)) ?? [];
+const totalRaters = data?.[0]?.avg?.[0]?.count_users ?? 0; // rough indicator; counts vary per season
+---
+
+<BaseLayout
+    title="Global Averages — AHS Ratings"
+    description="See the average community rating for each season of American Horror Story."
+>
+    <section
+        class="px-3 border-b border-border bg-[radial-gradient(80%_80%_at_50%_0%,color-mix(in_oklab,var(--color-accent)_20%,transparent),transparent_60%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.25))]"
+    >
+        <div class="mx-auto max-w-3xl py-10">
+            <h1
+                class="mb-1 text-3xl tracking-wide font-display"
+            >
+                Global averages
+            </h1>
+            <p class="max-w-[720px] text-muted">
+                Live community scores for every season. Values update as users
+                rate.
+            </p>
+        </div>
+    </section>
+
+    <section class="mx-auto max-w-3xl py-6">
+        {
+            error && (
+                <div class="mb-4 rounded-lg border border-border bg-panel p-3 text-sm text-red-500">
+                    Failed to load stats: {error.message}
+                </div>
+            )
+        }
+
+        <div class="rounded-xl border border-border bg-panel p-4">
+            <div class="mb-3 flex items-center justify-between">
+                <h2 class="text-sm font-semibold tracking-wide text-muted">
+                    Average rating per season
+                </h2>
+                <div class="text-sm text-muted">
+                    {!error && `Participants: ${totalRaters.toLocaleString()}`}
+                </div>
+            </div>
+
+            <SVGBarChart labels={labels} values={values} />
+        </div>
+    </section>
+
+    <section class="">
+        <CTASection />
+    </section>
+</BaseLayout>

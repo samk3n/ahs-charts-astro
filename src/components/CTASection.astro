@@ -1,0 +1,55 @@
+---
+/**
+ * CTASection — a themed call-to-action.
+ * Props (optional):
+ *  - title?: string
+ *  - blurb?: string
+ *  - smart?: boolean  (default true) → if true, decides href based on auth state
+ *  - href?: string    (fallback / override)
+ *  - buttonLabel?: string (default "Start rating")
+ */
+import { supabaseFromAstro } from "@/lib/supabaseServer";
+
+interface Props {
+    title?: string;
+    blurb?: string;
+    smart?: boolean;
+    href?: string;
+    buttonLabel?: string;
+}
+const {
+    title = "Start rating every season now!",
+    blurb = "Share your take on each season and see how your ratings compare with the community.",
+    smart = true,
+    href: hrefProp,
+    buttonLabel = "Start rating",
+} = Astro.props;
+
+let href = hrefProp ?? "/rate";
+
+// If smart mode, pick a friendlier target for logged-out users
+if (smart && !hrefProp) {
+    const supabase = supabaseFromAstro(Astro);
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    href = user ? "/rate" : "/auth/signup";
+}
+---
+
+<section
+    class="border bg-panel border-border p-6 text-center md:p-10"
+>
+    <h2
+        class="text-2xl md:text-3xl font-display"
+    >
+        {title}
+    </h2>
+    <p class="mx-auto mt-2 max-w-2xl text-muted">{blurb}</p>
+    <a
+        href={href}
+        class="mt-6 inline-block rounded-lg border border-accent bg-accent/10 px-5 py-2.5 font-medium hover:bg-accent/20"
+    >
+        {buttonLabel} →
+    </a>
+</section>

@@ -1,0 +1,35 @@
+---
+/**
+ * Theme toggle button — calls the global __toggleTheme() defined in BaseLayout.
+ * Safe to render multiple times (desktop + mobile) with no duplicate listeners.
+ */
+---
+
+<button
+    class="inline-flex items-center gap-2 rounded-lg border border-border px-2.5 py-1.5 text-sm text-muted hover:text-text cursor-pointer"
+    aria-label="Toggle theme"
+    title="Toggle theme"
+    onclick="__toggleTheme()"
+>
+    <!-- Sun / Light icon -->
+    <svg
+        class="h-4 w-4 hidden [html[data-theme=light]_&]:block"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+    >
+        <path
+            d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm0 4a1 1 0 0 1-1-1v-1.25a1 1 0 0 1 2 0V21a1 1 0 0 1-1 1ZM12 3.25a1 1 0 0 1 1 1V5.5a1 1 0 1 1-2 0V4.25a1 1 0 0 1 1-1ZM4.22 5.64a1 1 0 0 1 1.41 0l.88.88a1 1 0 1 1-1.41 1.41l-.88-.88a1 1 0 0 1 0-1.41Zm12.3 12.3a1 1 0 0 1 1.41 0l.88.88a1 1 0 1 1-1.41 1.41l-.88-.88a1 1 0 0 1 0-1.41ZM3 13a1 1 0 1 1 0-2h1.25a1 1 0 0 1 0 2H3Zm16.75 0a1 1 0 0 1-1-1V10.75a1 1 0 0 1 2 0V12a1 1 0 0 1-1 1ZM4.22 18.36a1 1 0 0 1 1.41 0l.88.88a1 1 0 1 1-1.41 1.41l-.88-.88a1 1 0 0 1 0-1.41Zm12.3-12.3a1 1 0 0 1 1.41 0l.88.88a1 1 0 1 1-1.41 1.41l-.88-.88a1 1 0 0 1 0-1.41Z"
+        ></path>
+    </svg>
+
+    <!-- Moon / Dark icon -->
+    <svg
+        class="h-4 w-4 block [html[data-theme=light]_&]:hidden"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+    >
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path>
+    </svg>
+</button>

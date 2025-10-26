@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* Design tokens — Tailwind v4 generates utilities like bg-bg, text-text, border-border, etc. */
+@theme {
+  /* colors (dark default) */
+  --color-bg: #0f1115;
+  --color-panel: #161a22;
+  --color-text: #e6e8ec;
+  --color-muted: #9aa3b2;
+  --color-border: #252a34;
+  --color-accent: #b02400;
+
+  /* you can add a custom brand too, e.g. --color-gold: #fdd835; → bg-gold */
+  --color-gold: #fdd835;
+
+  /* typography */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", Arial;
+  --font-display: "AHS", "Cormorant Garamond", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  /* breakpoints if you want custom ones (defaults already exist) */
+  /* --breakpoint-3xl: 120rem; */
+}
+
+/* Light theme overrides: simply override the variables (no nested @theme) */
+html[data-theme="light"] {
+  --color-bg: #f7f8fb;
+  --color-panel: #ffffff;
+  --color-text: #0c1015;
+  --color-muted: #4f5661;
+  --color-border: #e7ebf2;
+  /* keep accent the same, or change if you want a different light accent */
+  --color-accent: #b02400;
+}
+
+/* base */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  @apply h-full;
+}
+
+html {
+  transition: background-color .2s ease, color .2s ease;
+}
+
+body {
+  @apply bg-bg text-text font-sans;
+}
+
+/* container helper */
+.container {
+  @apply mx-auto max-w-[1100px] px-4;
+}
+
+@font-face {
+  font-family: 'AHS';
+  src: url('/fonts/AmericanHorrorStory-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

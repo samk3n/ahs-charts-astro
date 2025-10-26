@@ -1,0 +1,87 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const errMsg = Astro.url.searchParams.get("e")
+    ? decodeURIComponent(Astro.url.searchParams.get("e")!)
+    : null;
+---
+
+<BaseLayout
+    title="Sign up — AHS Ratings"
+    description="Create an account to rate every AHS season."
+>
+    <section
+        class="border-b border-border bg-[radial-gradient(80%_80%_at_50%_0%,color-mix(in_oklab,var(--color-accent)_20%,transparent),transparent_60%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.25))]"
+    >
+        <div class="container py-10">
+            <h1
+                class="mb-1 text-3xl tracking-wide font-display"
+            >
+                Create your account
+            </h1>
+            <p class="max-w-[720px] text-muted">
+                Sign up with email and password, or use Google.
+            </p>
+        </div>
+    </section>
+
+    <section class="container py-6">
+        <div
+            class="mx-auto max-w-md rounded-xl border border-border bg-panel p-5"
+        >
+            {
+                errMsg && (
+                    <div class="mb-3 rounded-lg border border-border bg-bg/50 p-3 text-sm text-red-500">
+                        {errMsg}
+                    </div>
+                )
+            }
+
+            <form action="/api/signup" method="post" class="space-y-3">
+                <label class="block">
+                    <div class="mb-1 text-sm text-muted">Email</div>
+                    <input
+                        name="email"
+                        type="email"
+                        required
+                        autocomplete="email"
+                        class="w-full rounded-lg border border-border bg-bg px-3 py-2 outline-none focus:ring-2 focus:ring-accent"
+                    />
+                </label>
+
+                <label class="block">
+                    <div class="mb-1 text-sm text-muted">Password</div>
+                    <input
+                        name="password"
+                        type="password"
+                        required
+                        autocomplete="new-password"
+                        class="w-full rounded-lg border border-border bg-bg px-3 py-2 outline-none focus:ring-2 focus:ring-accent"
+                    />
+                </label>
+
+                <button
+                    class="w-full rounded-lg border border-border bg-panel px-3 py-2 font-medium hover:bg-panel/80"
+                >
+                    Sign up
+                </button>
+            </form>
+
+            <div class="my-4 text-center text-muted">or</div>
+
+            <a
+                href="/api/oauth/google"
+                class="block w-full rounded-lg border border-border bg-panel px-3 py-2 text-center hover:bg-panel/80"
+            >
+                Continue with Google
+            </a>
+
+            <div class="mt-4 text-center text-sm text-muted">
+                Already have an account? <a
+                    class="text-text underline"
+                    href="/auth/login">Log in</a
+                >
+            </div>
+        </div>
+    </section>
+</BaseLayout>

@@ -1,0 +1,246 @@
+---
+import ThemeToggle from "@/components/ThemeToggle.astro";
+import { supabaseFromAstro } from "@/lib/supabaseServer";
+
+const supabase = supabaseFromAstro(Astro);
+
+// Auth state (SSR)
+const {
+    data: { user },
+} = await supabase.auth.getUser();
+let profile: { username: string | null; avatar_url: string | null, avatar_version: number } | null =
+    null;
+
+if (user) {
+    const { data } = await supabase
+        .from("profiles")
+        .select("username, avatar_url, avatar_version")
+        .eq("id", user.id)
+        .single();
+    profile = data ?? { username: null, avatar_url: null, avatar_version: 0 };
+}
+
+const links = [
+    { href: "/rate", label: "Rate" },
+    { href: "/stats", label: "Stats" },
+];
+
+const avatarUrl = profile?.avatar_url && profile?.avatar_version != null
+  ? `${profile.avatar_url}?v=${profile.avatar_version}`
+  : null;
+---
+
+<header class="border-b border-border">
+    <div class="container h-14 flex items-center gap-4">
+        <!-- Brand -->
+        <a
+            href="/"
+            class="tracking-wide font-display">Rate AHS</a
+        >
+
+        <!-- Desktop nav -->
+        <nav class="ml-auto hidden items-center gap-4 md:flex">
+            {
+                links.map((l) => (
+                    <a href={l.href} class="text-muted hover:text-text">
+                        {l.label}
+                    </a>
+                ))
+            }
+
+            <!-- Profile / Auth actions -->
+            {
+                user ? (
+                    <>
+                        <a
+                            href="/profile"
+                            class="inline-flex items-center gap-2 text-muted hover:text-text"
+                        >
+                            {profile?.avatar_url ? (
+                                <img
+                                    src={profile.avatar_url}
+                                    alt=""
+                                    class="size-6 rounded-full object-cover border border-border"
+                                />
+                            ) : (
+                                <span class="size-6 rounded-full bg-border inline-block" />
+                            )}
+                            <span class="hidden sm:inline">
+                                {profile?.username ?? "Profile"}
+                            </span>
+                        </a>
+                        {/* <form action="/api/logout" method="post">
+                            <button class="rounded-lg border border-border px-2 py-1 text-sm text-muted hover:text-text">
+                                Log out
+                            </button>
+                        </form> */}
+                    </>
+                ) : (
+                    <>
+                        <a
+                            href="/auth/login"
+                            class="text-muted hover:text-text"
+                        >
+                            Log in
+                        </a>
+                        <a
+                            href="/auth/signup"
+                            class="rounded-lg border border-border px-2 py-1 text-sm hover:bg-panel/80"
+                        >
+                            Sign up
+                        </a>
+                    </>
+                )
+            }
+
+            <ThemeToggle />
+        </nav>
+
+        <!-- Mobile actions -->
+        <div class="ml-auto flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <button
+                id="openMenu"
+                class="rounded-lg border border-border px-2 py-1 text-sm text-muted hover:text-text"
+                aria-label="Open menu"
+            >
+                Menu
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile full-screen slide-in menu -->
+<div id="mobileMenu" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div
+        id="menuBackdrop"
+        class="absolute inset-0 bg-black/50 opacity-0 transition-opacity"
+    >
+    </div>
+
+    <!-- Panel -->
+    <div
+        id="menuPanel"
+        class="absolute inset-y-0 right-0 w-full max-w-[380px] translate-x-full bg-panel border-l border-border transition-transform"
+    >
+        <div
+            class="h-14 flex items-center justify-between px-4 border-b border-border"
+        >
+            <span class="font-display"
+                >Menu</span
+            >
+            <button
+                id="closeMenu"
+                class="rounded-lg border border-border px-2 py-1 text-sm text-muted hover:text-text"
+                aria-label="Close menu"
+            >
+                Close
+            </button>
+        </div>
+
+        <nav class="px-4 py-4 space-y-2">
+            {
+                links.map((l) => (
+                    <a
+                        href={l.href}
+                        class="block rounded-lg px-3 py-2 text-lg hover:bg-panel/80"
+                    >
+                        {l.label}
+                    </a>
+                ))
+            }
+
+            <div class="my-3 h-px bg-border"></div>
+
+            {
+                user ? (
+                    <>
+                        <a
+                            href="/profile"
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-panel/80"
+                        >
+                            {profile?.avatar_url ? (
+                                <img
+                                    src={avatarUrl}
+                                    alt=""
+                                    class="size-7 rounded-full object-cover border border-border"
+                                />
+                            ) : (
+                                <span class="size-7 rounded-full bg-border inline-block" />
+                            )}
+                            <span class="text-lg">
+                                {profile?.username ?? "Profile"}
+                            </span>
+                        </a>
+                        <form
+                            action="/api/logout"
+                            method="post"
+                            class="px-3 pt-2"
+                        >
+                            <button class="w-full rounded-lg border border-border px-3 py-2 hover:bg-panel/80">
+                                Log out
+                            </button>
+                        </form>
+                    </>
+                ) : (
+                    <div class="grid gap-2 px-3">
+                        <a
+                            href="/auth/login"
+                            class="rounded-lg border border-border px-3 py-2 text-center hover:bg-panel/80"
+                        >
+                            Log in
+                        </a>
+                        <a
+                            href="/auth/signup"
+                            class="rounded-lg border border-border px-3 py-2 text-center hover:bg-panel/80"
+                        >
+                            Sign up
+                        </a>
+                    </div>
+                )
+            }
+        </nav>
+    </div>
+</div>
+
+<script is:inline>
+    const openBtn = document.getElementById("openMenu");
+    const closeBtn = document.getElementById("closeMenu");
+    const menu = document.getElementById("mobileMenu");
+    const panel = document.getElementById("menuPanel");
+    const backdrop = document.getElementById("menuBackdrop");
+
+    function openMenu() {
+        if (!menu || !panel || !backdrop) return;
+        menu.classList.remove("hidden");
+        requestAnimationFrame(() => {
+            panel.classList.remove("translate-x-full");
+            backdrop.classList.remove("opacity-0");
+            backdrop.classList.add("opacity-100");
+        });
+        document.addEventListener("keydown", escHandler);
+    }
+
+    function closeMenu() {
+        if (!menu || !panel || !backdrop) return;
+        panel.classList.add("translate-x-full");
+        backdrop.classList.remove("opacity-100");
+        backdrop.classList.add("opacity-0");
+        const onEnd = (e) => {
+            if (e.target !== panel) return;
+            menu.classList.add("hidden");
+            panel.removeEventListener("transitionend", onEnd);
+        };
+        panel.addEventListener("transitionend", onEnd);
+        document.removeEventListener("keydown", escHandler);
+    }
+
+    function escHandler(e) {
+        if (e.key === "Escape") closeMenu();
+    }
+
+    openBtn?.addEventListener("click", openMenu);
+    closeBtn?.addEventListener("click", closeMenu);
+    backdrop?.addEventListener("click", closeMenu);
+</script>

@@ -1,0 +1,252 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { supabaseFromAstro } from "@/lib/supabaseServer";
+import AvatarUploader from "@/components/AvatarUploader.tsx";
+
+export const prerender = false;
+
+const supabase = supabaseFromAstro(Astro);
+const { data: userRes } = await supabase.auth.getUser();
+if (!userRes.user) {
+    return Astro.redirect("/auth/login");
+}
+
+// Load profile
+const { data: profile } = await supabase
+    .from("profiles")
+    .select("username, avatar_url")
+    .eq("id", userRes.user.id)
+    .single();
+
+// If username already set, go to profile (or /rate)
+if (profile?.username) {
+    return Astro.redirect("/profile");
+}
+
+// Handle email status (informative only)
+const emailVerified = !!userRes.user.email_confirmed_at;
+---
+
+<BaseLayout title="Choose a username — AHS Ratings">
+    <section
+        class="border-b border-border bg-[radial-gradient(80%_80%_at_50%_0%,color-mix(in_oklab,var(--color-accent)_20%,transparent),transparent_60%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.25))]"
+    >
+        <div class="container py-10">
+            <h1 class="mb-1 text-3xl tracking-wide font-display">
+                Choose your username
+            </h1>
+            <p class="max-w-[720px] text-muted">
+                Pick a unique handle (5+ characters,
+                letters/numbers/underscores). You can upload an avatar too.
+            </p>
+        </div>
+    </section>
+
+    <section class="container my-6">
+        <div
+            class="flex flex-col items-start gap-6 rounded-xl border border-border bg-panel p-4"
+        >
+            <!-- Left: username + status -->
+            <div class="w-full space-y-4">
+                {
+                    !emailVerified && (
+                        <div class="rounded-lg border border-border bg-bg/50 p-3 text-sm text-muted">
+                            Verify your email to save ratings later.
+                        </div>
+                    )
+                }
+
+                <div class="space-y-3">
+                    <label class="block">
+                        <div class="mb-1 text-sm text-muted">Username</div>
+                        <input
+                            id="username"
+                            name="username"
+                            minlength="5"
+                            pattern="^[A-Za-z0-9_]{5,}$"
+                            required
+                            placeholder="your_handle"
+                            class="w-full rounded-lg border border-border bg-bg px-3 py-2 outline-none focus:ring-2 focus:ring-accent placeholder:text-muted"
+                        />
+                    </label>
+
+                    <!-- live status line -->
+                    <div id="uStatus" class="text-sm text-muted"></div>
+                </div>
+            </div>
+
+            <!-- Right: avatar upload -->
+            <div>
+                <h2 class="mb-3 text-sm font-semibold text-muted tracking-wide">
+                    Profile picture
+                </h2>
+                <AvatarUploader client:load initialUrl={profile?.avatar_url} />
+            </div>
+
+            <form id="unameForm" class="self-center">
+                <button
+                    id="saveBtn"
+                    type="submit"
+                    class="rounded-lg border border-border bg-panel px-3 py-2 text-lg font-medium hover:bg-panel/80 disabled:opacity-50 cursor-pointer"
+                    disabled
+                >
+                    Save
+                </button>
+                <div id="msg" class="text-sm"></div>
+            </form>
+
+            <script is:inline>
+                const form = document.getElementById("unameForm");
+                const input = document.getElementById("username");
+                const statusEl = document.getElementById("uStatus");
+                const btn = document.getElementById("saveBtn");
+                const msg = document.getElementById("msg");
+
+                let lastValue = "";
+                let t = null;
+
+                function setStatus(type, text) {
+                    // type: 'muted' | 'ok' | 'warn' | 'error'
+                    const classes = {
+                        muted: "text-muted",
+                        ok: "text-green-500",
+                        warn: "text-yellow-500",
+                        error: "text-red-500",
+                    };
+                    statusEl.className =
+                        "text-sm " + (classes[type] || "text-muted");
+                    statusEl.textContent = text;
+                }
+
+                function isFormatValid(v) {
+                    return /^[A-Za-z0-9_]{5,}$/.test(v);
+                }
+
+                async function checkAvailability(v) {
+                    try {
+                        const res = await fetch(
+                            "/api/username-available?username=" +
+                                encodeURIComponent(v),
+                        );
+                        const json = await res.json();
+                        if (!json.ok)
+                            throw new Error(json.error || "Check failed");
+                        return json.available === true;
+                    } catch (_) {
+                        return null; // network/server error
+                    }
+                }
+
+                function updateButton(canSave) {
+                    if (canSave) btn.removeAttribute("disabled");
+                    else btn.setAttribute("disabled", "true");
+                }
+
+                input?.addEventListener("input", () => {
+                    msg.textContent = "";
+                    const v = input.value.trim();
+                    lastValue = v;
+                    updateButton(false);
+
+                    if (!v) {
+                        setStatus("muted", "");
+                        return;
+                    }
+                    if (!isFormatValid(v)) {
+                        setStatus(
+                            "warn",
+                            "Use 5+ characters: letters, numbers, or underscores.",
+                        );
+                        return;
+                    }
+
+                    setStatus("muted", "Checking availability…");
+
+                    if (t) clearTimeout(t);
+                    t = setTimeout(async () => {
+                        const available = await checkAvailability(v);
+                        if (lastValue !== v) return; // ignore stale result
+
+                        if (available === null) {
+                            setStatus(
+                                "error",
+                                "Could not check availability. Try again.",
+                            );
+                            updateButton(false);
+                            return;
+                        }
+                        if (available) {
+                            setStatus(
+                                "ok",
+                                "Looks good — username is available.",
+                            );
+                            updateButton(true);
+                        } else {
+                            setStatus("error", "Username already taken.");
+                            updateButton(false);
+                        }
+                    }, 300);
+                });
+
+                form?.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    msg.textContent = "";
+                    updateButton(false);
+                    btn.textContent = "Saving..."
+                    try {
+                        const v = input.value.trim();
+                        if (!isFormatValid(v)) {
+                            setStatus(
+                                "warn",
+                                "Use 5+ characters: letters, numbers, or underscores.",
+                            );
+                            updateButton(false);
+                            return;
+                        }
+                        // optional final check
+                        const available = await checkAvailability(v);
+                        if (available === false) {
+                            setStatus("error", "Username already taken.");
+                            updateButton(false);
+                            return;
+                        }
+                        if (available === null) {
+                            setStatus(
+                                "error",
+                                "Could not check availability. Try again.",
+                            );
+                            updateButton(false);
+                            return;
+                        }
+
+                        const res = await fetch("/api/username", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ username: v }),
+                        });
+                        const json = await res.json();
+                        if (!res.ok) throw new Error(json?.error || "Failed");
+
+                        setStatus("ok", "Saved.");
+                        msg.className = "text-sm text-green-500";
+                        msg.textContent = "Saved! Redirecting…";
+                        setTimeout(() => {
+                            window.location.href = "/rate";
+                        }, 700);
+                    } catch (err) {
+                        setStatus(
+                            "error",
+                            err && err.message ? err.message : "Error",
+                        );
+                        msg.className = "text-sm text-red-500";
+                        msg.textContent =
+                            err && err.message ? err.message : "Error";
+                    }
+                    finally {
+                        btn.textContent = "Save"
+                    }
+                });
+            </script>
+        </div>
+    </section>
+</BaseLayout>

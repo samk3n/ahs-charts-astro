@@ -1,0 +1,39 @@
+---
+import SVGBarChart from "./SVGBarChart.tsx";
+
+interface Props {
+    username: string;
+    avatarUrl?: string | null;
+    labels: string[];
+    values: number[];
+    updated?: string;
+}
+const { username, avatarUrl, labels, values, updated } = Astro.props;
+---
+
+<article class="rounded-xl border border-border bg-panel p-3">
+    <header class="mb-2 flex items-center gap-3">
+        {
+            avatarUrl ? (
+                <img
+                    src={avatarUrl}
+                    alt=""
+                    width="28"
+                    height="28"
+                    class="size-7 rounded-full object-cover"
+                />
+            ) : (
+                <div class="size-7 rounded-full bg-border" />
+            )
+        }
+        <div class="font-semibold">{username}</div>
+        {
+            updated && (
+                <div class="ml-auto text-[12px] text-muted">
+                    {new Date(updated).toLocaleString()}
+                </div>
+            )
+        }
+    </header>
+    <SVGBarChart labels={labels} values={values} />
+</article>
