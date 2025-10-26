@@ -37,6 +37,15 @@ const errMsg = Astro.url.searchParams.get("e")
                 )
             }
 
+            <a
+                href="/api/oauth/google"
+                class="block w-full rounded-lg border border-border bg-bg px-3 py-2 font-semibold text-center hover:bg-panel/80"
+            >
+                Continue with Google
+            </a>
+
+            <div class="my-4 text-center text-muted">or</div>
+
             <form action="/api/signup" method="post" class="space-y-3">
                 <label class="block">
                     <div class="mb-1 text-sm text-muted">Email</div>
@@ -66,15 +75,6 @@ const errMsg = Astro.url.searchParams.get("e")
                     Sign up
                 </button>
             </form>
-
-            <div class="my-4 text-center text-muted">or</div>
-
-            <a
-                href="/api/oauth/google"
-                class="block w-full rounded-lg border border-border bg-panel px-3 py-2 text-center hover:bg-panel/80"
-            >
-                Continue with Google
-            </a>
 
             <div class="mt-4 text-center text-sm text-muted">
                 Already have an account? <a

@@ -14,9 +14,7 @@ const errMsg = Astro.url.searchParams.get("e")
         class="border-b border-border bg-[radial-gradient(80%_80%_at_50%_0%,color-mix(in_oklab,var(--color-accent)_20%,transparent),transparent_60%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.25))]"
     >
         <div class="container py-10">
-            <h1
-                class="mb-1 text-3xl tracking-wide font-display"
-            >
+            <h1 class="mb-1 text-3xl tracking-wide font-display">
                 Welcome back
             </h1>
             <p class="max-w-[720px] text-muted">
@@ -36,6 +34,15 @@ const errMsg = Astro.url.searchParams.get("e")
                     </div>
                 )
             }
+
+            <a
+                href="/api/oauth/google"
+                class="block w-full rounded-lg border border-border bg-bg px-3 py-2 font-semibold text-center hover:bg-panel/80"
+            >
+                Continue with Google
+            </a>
+
+            <div class="my-4 text-center text-muted">or</div>
 
             <form action="/api/login" method="post" class="space-y-3">
                 <label class="block">
@@ -66,15 +73,6 @@ const errMsg = Astro.url.searchParams.get("e")
                     Log in
                 </button>
             </form>
-
-            <div class="my-4 text-center text-muted">or</div>
-
-            <a
-                href="/api/oauth/google"
-                class="block w-full rounded-lg border border-border bg-panel px-3 py-2 text-center hover:bg-panel/80"
-            >
-                Continue with Google
-            </a>
 
             <div class="mt-4 text-center text-sm text-muted">
                 No account? <a class="text-text underline" href="/auth/signup"
