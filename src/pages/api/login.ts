@@ -11,9 +11,18 @@ export const POST: APIRoute = async (ctx) => {
     if (error) {
         const url = new URL('/auth/login', ctx.url)
         url.searchParams.set('e', encodeURIComponent(error.message))
-        return Response.redirect(url, 303)
+        // return Response.redirect(url, 303)
+        return new Response(null, {
+            status: 303,
+            headers: new Headers({ Location: url.toString() }),
+        });
     }
 
     // If email not verified, still logged in but you can prompt them elsewhere.
-    return Response.redirect(new URL('/rate', ctx.url), 303)
+    // return Response.redirect(new URL('/rate', ctx.url), 303)
+    const to = new URL("/rate", ctx.url);
+    return new Response(null, {
+        status: 303,
+        headers: new Headers({ Location: to.toString() }),
+    });
 }
