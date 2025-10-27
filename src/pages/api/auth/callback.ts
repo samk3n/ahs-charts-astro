@@ -15,10 +15,19 @@ export const GET: APIRoute = async (ctx) => {
         if (error) {
             const url = new URL('/auth/login', ctx.url)
             url.searchParams.set('e', encodeURIComponent(error.message))
-            return Response.redirect(url, 303)
+            // return Response.redirect(url, 303)
+            return new Response(null, {
+                status: 303,
+                headers: new Headers({ Location: url.toString() }),
+            });
         }
     }
 
     // Redirect to the home page or wherever you want after successful login
-    return Response.redirect(new URL(next, ctx.url), 303)
+    // return Response.redirect(new URL(next, ctx.url), 303)
+    const to = new URL(next, ctx.url);
+    return new Response(null, {
+        status: 303,
+        headers: new Headers({ Location: to.toString() }),
+    });
 }

@@ -11,11 +11,19 @@ export const POST: APIRoute = async (ctx) => {
     if (error) {
         const url = new URL('/auth/signup', ctx.url)
         url.searchParams.set('e', encodeURIComponent(error.message))
-        return Response.redirect(url, 303)
+        // return Response.redirect(url, 303)
+        return new Response(null, {
+            status: 303,
+            headers: new Headers({ Location: url.toString() }),
+        });
     }
 
     // Ask user to verify email; they’ll be able to rate after verification.
     const url = new URL('/auth/verify', ctx.url)
     url.searchParams.set('email', email)
-    return Response.redirect(url, 303)
+    // return Response.redirect(url, 303)
+    return new Response(null, {
+        status: 303,
+        headers: new Headers({ Location: url.toString() }),
+    });
 }
