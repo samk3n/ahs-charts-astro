@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import SVGBarChart from './SVGBarChart';
+import ValueStepper from './ValueStepper';
 
 type Season = { id: number; title: string }
 type Props = {
@@ -91,9 +92,9 @@ export default function RateChartIsland({ seasons, initialRatings, emailVerified
     const ticks = Array.from({ length: 11 }, (_, i) => i * 10)
 
     return (
-        <div className="grid gap-4 md:grid-cols-[420px,1fr]">
+        <div className="grid gap-4 lg:grid-cols-2">
             {/* Controls */}
-            <section className="rounded-xl border border-border bg-panel p-3">
+            <section className="rounded-xl border border-border bg-panel p-3 flex flex-col items-center">
                 <h2 className="mb-3 text-sm font-semibold text-muted tracking-wide">Rate each season (0–100)</h2>
 
                 {!emailVerified && (
@@ -102,18 +103,26 @@ export default function RateChartIsland({ seasons, initialRatings, emailVerified
                     </div>
                 )}
 
-                <div className="space-y-3">
+                <div className="space-y-3 flex flex-col gap-3">
                     {seasons.map((s, idx) => (
                         <div key={s.id} className="grid grid-cols-[1fr,3rem] items-center gap-3">
                             <div>
-                                <div className="mb-1 text-[0.95rem]">{idx + 1}. {s.title} (<span className="text-right font-mono text-muted">{ratings[s.id] ?? 0}</span>)</div>
-                                <input
+                                <div className="mb-1 text-[0.95rem]">{idx + 1}. {s.title}</div>
+                                {/* <input
                                     type="range" min={0} max={100}
                                     value={ratings[s.id] ?? 0}
                                     aria-label={`${s.title} rating`}
                                     disabled={!emailVerified}
                                     onChange={(e) => onChange(s.id, Number((e.target as HTMLInputElement).value))}
                                     className="w-full accent-accent"
+                                /> */}
+                                <ValueStepper
+                                    min={0}
+                                    max={100}
+                                    value={ratings[s.id] ?? 0}
+                                    aria-label={`${s.title} rating`}
+                                    disabled={!emailVerified}
+                                    onChange={(newValue) => onChange(s.id, newValue)}
                                 />
                             </div>
                         </div>
@@ -147,7 +156,7 @@ export default function RateChartIsland({ seasons, initialRatings, emailVerified
             </section>
 
             {/* Chart */}
-            <section className="rounded-xl border border-border bg-panel p-3">
+            <section className="rounded-xl border border-border bg-panel p-3 h-fit">
                 <h2 className="text-sm font-semibold text-muted tracking-wide">Your ratings</h2>
 
                 <div className="relative">
