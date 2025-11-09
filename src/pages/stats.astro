@@ -3,6 +3,8 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import SVGBarChart from "@/components/SVGBarChart.tsx";
 import { supabaseFromAstro } from "@/lib/supabaseServer";
 import CTASection from "@/components/CTASection.astro";
+import { Image } from "astro:assets";
+import hero from "@/assets/hero3.webp"
 
 const supabase = supabaseFromAstro(Astro);
 
@@ -19,21 +21,25 @@ const totalRaters = data?.[0]?.avg?.[0]?.count_users ?? 0; // rough indicator; c
 ---
 
 <BaseLayout
-    title="Global Averages — AHS Ratings"
+    title="Rate AHS - Global Averages"
     description="See the average community rating for each season of American Horror Story."
 >
     <section
-        class="px-3 border-b border-border bg-[radial-gradient(80%_80%_at_50%_0%,color-mix(in_oklab,var(--color-accent)_20%,transparent),transparent_60%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.25))]"
+        class="relative h-96 flex flex-col items-center justify-center overflow-hidden py-24 text-center text-white"
     >
-        <div class="mx-auto max-w-3xl py-10">
-            <h1
-                class="mb-1 text-3xl tracking-wide font-display"
-            >
-                Global averages
+        <Image
+            src={hero}
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover object-center brightness-60 md:brightness-50"
+            loading="lazy"
+        />
+        <div class="relative z-10 max-w-3xl px-4">
+            <h1 class="mb-1 text-3xl tracking-wide font-display">
+                The Morbid Consensus
             </h1>
             <p class="max-w-[720px] text-muted">
-                Live community scores for every season. Values update as users
-                rate.
+                A live statistical analysis of the madness. Witness the
+                collective verdict on which horrors truly cut the deepest.
             </p>
         </div>
     </section>

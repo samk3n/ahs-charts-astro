@@ -2,6 +2,8 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { supabaseFromAstro } from "@/lib/supabaseServer";
 import RateChartIsland from "@/components/RateChartIsland.tsx";
+import { Image } from "astro:assets";
+import hero from "@/assets/hero2.webp"
 
 const supabase = supabaseFromAstro(Astro);
 
@@ -33,20 +35,25 @@ const emailVerified = !!userRes.user.email_confirmed_at;
 ---
 
 <BaseLayout
-    title="Rate — AHS Ratings"
+    title="Rate AHS - Rate every season right now"
     description="Rate every season of American Horror Story."
 >
     <section
-        class="border-b border-border bg-[radial-gradient(80%_80%_at_50%_0%,color-mix(in_oklab,var(--color-accent)_20%,transparent),transparent_60%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.25))]"
+        class="relative h-96 flex flex-col items-center justify-center overflow-hidden py-24 text-center text-white"
     >
-        <div class="container py-10">
-            <h1
-                class="mb-1 text-3xl tracking-wide font-display"
-            >
-                Make your chart
+        <Image
+            src={hero}
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover object-center brightness-90 md:brightness-70"
+            loading="lazy"
+        />
+        
+        <div class="relative z-10 max-w-3xl px-4">
+            <h1 class="mb-1 text-3xl tracking-wide font-display">
+                An Autopsy of Horrors
             </h1>
             <p class="max-w-[720px] text-muted">
-                Drag the sliders to set your rating for each season.
+                Examine the evidence. Dissect each season's madness and assign a score based on your morbid findings.
             </p>
         </div>
     </section>

@@ -20,7 +20,7 @@ export default function ValueStepper({ value, onChange, min, max, disabled, 'ari
         onChange(newValue)
     }
 
-    const buttonClasses = "flex h-8 w-10 items-center justify-center rounded-md border border-border bg-accent/70 font-mono text-sm text-white hover:bg-accent/40 disabled:opacity-50"
+    const buttonClasses = "flex h-8 w-10 items-center justify-center rounded-md border border-border bg-accent/70 font-mono text-sm text-white hover:bg-accent/40 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition"
 
     return (
         <div className="flex items-center justify-start gap-2" aria-label={ariaLabel}>

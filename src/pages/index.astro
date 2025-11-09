@@ -3,7 +3,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import UserChartCard from "@/components/UserChartCard.astro";
 import { supabaseFromAstro } from "@/lib/supabaseServer";
 import CTASection from "@/components/CTASection.astro";
-import hero from "@/assets/hero.png";
+import hero from "@/assets/hero1.webp";
 import Image from "astro/components/Image.astro";
 
 const supabase = supabaseFromAstro(Astro);
@@ -52,7 +52,9 @@ const cards = (latestUsers ?? []).map((u) => {
     return {
         user_id: u.user_id,
         username: p?.username ?? "User",
-        avatarUrl: p?.avatar_url ? `${p?.avatar_url}?v=${p?.avatar_version}` : null,
+        avatarUrl: p?.avatar_url
+            ? `${p?.avatar_url}?v=${p?.avatar_version}`
+            : null,
         updated: u.last_activity,
         labels,
         values,
@@ -61,7 +63,7 @@ const cards = (latestUsers ?? []).map((u) => {
 ---
 
 <BaseLayout
-    title="AHS Ratings — Home"
+    title="Rate AHS - Rate every season"
     description="Rate every season of American Horror Story and explore the latest charts from the community."
 >
     <!-- Hero -->
@@ -72,17 +74,16 @@ const cards = (latestUsers ?? []).map((u) => {
         <Image
             src={hero}
             alt=""
-            class="absolute inset-0 h-full w-full object-cover object-right md:brightness-90"
+            class="absolute inset-0 h-full w-full object-cover object-right brightness-50 md:brightness-40"
             loading="lazy"
         />
 
         <div class="relative z-10 max-w-3xl px-4">
-            <h1 class="text-4xl md:text-5xl font-display">
-                Rate every season of American Horror Story
-            </h1>
+            <h1 class="text-4xl md:text-5xl font-display">You Let Them In</h1>
             <p class="mt-4 text-lg text-gray-200">
-                Share your opinions, compare with others, and see which seasons
-                truly stand out.
+                The clowns, the witches, the ghosts. They live in your head now.
+                It's time to decide which one reigns supreme in your personal
+                asylum.
             </p>
             <a
                 href="/rate"
