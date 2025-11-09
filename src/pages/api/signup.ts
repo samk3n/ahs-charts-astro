@@ -7,7 +7,11 @@ export const POST: APIRoute = async (ctx) => {
     const email = String(form.get('email') || '')
     const password = String(form.get('password') || '')
 
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    const requestUrl = new URL(ctx.url)
+    const origin = requestUrl.origin
+    const emailRedirectTo = `${origin}/api/auth/callback`
+
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo } })
     if (error) {
         const url = new URL('/auth/signup', ctx.url)
         url.searchParams.set('e', encodeURIComponent(error.message))

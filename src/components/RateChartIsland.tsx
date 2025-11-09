@@ -141,7 +141,7 @@ export default function RateChartIsland({ seasons, initialRatings, emailVerified
                     <button
                         onClick={onValidate}
                         disabled={!emailVerified || !isDirty || saving}
-                        className="rounded-lg border border-border bg-panel px-3 py-2 font-medium hover:bg-panel/80 disabled:opacity-50"
+                        className="rounded-lg border border-border bg-panel px-3 py-2 font-medium hover:bg-panel/80 disabled:opacity-50 cursor-pointer"
                     >
                         {saving ? 'Saving…' : 'Validate & Save'}
                     </button>
